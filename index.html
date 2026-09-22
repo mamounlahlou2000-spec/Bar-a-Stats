@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stats Blaugrana</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Figtree:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#f3f4f8; --surface:#ffffff; --surface-2:#eceef5; --line:#d9dce8;
+  --ink:#141a33; --muted:#5b6283; --navy:#0e1b4d; --garnet:#a50044; --gold:#e9b300;
+  --accent:var(--garnet); --on-accent:#fff; --warn-bg:#fff4d6; --warn-ink:#6b4e00;
+  --err-bg:#fde8ee; --err-ink:#8a0036; --shadow:0 1px 2px rgba(14,27,77,.06),0 8px 24px rgba(14,27,77,.06);
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0a0f24; --surface:#121a3a; --surface-2:#18214a; --line:#26305e;
+    --ink:#eef0fa; --muted:#9aa2c8; --navy:#0e1b4d; --garnet:#e0336f; --gold:#f2c230;
+    --warn-bg:#3a2f0a; --warn-ink:#f5d77a; --err-bg:#3d0f22; --err-ink:#ff9dbc;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0a0f24; --surface:#121a3a; --surface-2:#18214a; --line:#26305e;
+  --ink:#eef0fa; --muted:#9aa2c8; --navy:#0e1b4d; --garnet:#e0336f; --gold:#f2c230;
+  --warn-bg:#3a2f0a; --warn-ink:#f5d77a; --err-bg:#3d0f22; --err-ink:#ff9dbc;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);-webkit-font-smoothing:antialiased}
+[hidden]{display:none!important}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+/* Masthead */
+.mast{background:var(--navy);color:#fff;position:relative;overflow:hidden}
+.mast::after{content:"";position:absolute;inset:auto 0 0 0;height:6px;
+  background:repeating-linear-gradient(90deg,var(--garnet) 0 28px,#1b3fa0 28px 56px)}
+.mast-in{max-width:1040px;margin:0 auto;padding:22px 16px 30px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:10px;margin-right:auto}
+.brand h1{font:700 30px/1 var(--display);letter-spacing:.02em;text-transform:uppercase;margin:0}
+.brand span{font:500 14px/1 var(--display);letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.icon-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer;font-weight:600;font-size:13px}
+.icon-btn:hover{background:rgba(255,255,255,.18)}
+
+.wrap{max-width:1040px;margin:0 auto;padding-inline:16px;padding-block:0 60px}
+
+/* Search */
+.search{position:relative;margin-top:-22px;z-index:5}
+.search input{width:100%;padding:16px 18px 16px 48px;border-radius:12px;border:1px solid var(--line);background:var(--surface);box-shadow:var(--shadow);font-size:17px}
+.search svg{position:absolute;left:17px;top:18px;width:20px;height:20px;color:var(--muted)}
+.dropdown{position:absolute;left:0;right:0;top:calc(100% + 6px);background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);max-height:360px;overflow:auto;padding:6px}
+.opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:0;border-radius:8px;padding:8px 10px;cursor:pointer}
+.opt:hover,.opt.active{background:var(--surface-2)}
+.opt .num{font:700 20px/1 var(--display);width:30px;text-align:center;color:var(--accent);font-variant-numeric:tabular-nums}
+.opt img{width:32px;height:32px;border-radius:50%;object-fit:cover;background:var(--surface-2)}
+.opt .pos{margin-left:auto;font-size:12px;color:var(--muted)}
+.opt.global{color:var(--muted);font-size:14px;justify-content:center}
+
+/* Squad grid (idle) */
+.section-label{font:600 13px/1 var(--display);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:28px 0 12px}
+.squad{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.chip{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px;cursor:pointer;text-align:left}
+.chip:hover{border-color:var(--accent)}
+.chip .num{font:700 20px/1 var(--display);width:26px;text-align:center;color:var(--accent);font-variant-numeric:tabular-nums}
+.chip img{width:30px;height:30px;border-radius:50%;object-fit:cover;background:var(--surface-2)}
+.chip b{font-weight:600;font-size:14px;display:block;line-height:1.2}
+.chip small{color:var(--muted);font-size:12px}
+
+/* Player */
+.player{margin-top:26px;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.player img{width:92px;height:92px;border-radius:14px;object-fit:cover;background:var(--surface-2);border:1px solid var(--line)}
+.player .bignum{font:700 64px/.8 var(--display);color:var(--accent);font-variant-numeric:tabular-nums}
+.player h2{font:700 40px/1 var(--display);text-transform:uppercase;margin:0 0 6px;text-wrap:balance}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;color:var(--muted);font-size:14px}
+
+.tabs{display:flex;gap:4px;margin-top:22px;background:var(--surface-2);padding:4px;border-radius:10px;width:fit-content;max-width:100%;overflow-x:auto}
+.tab{border:0;background:none;padding:9px 16px;border-radius:7px;cursor:pointer;font-weight:600;font-size:14px;color:var(--muted);white-space:nowrap}
+.tab[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:18px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.tile .v{font:700 42px/1 var(--display);font-variant-numeric:tabular-nums}
+.tile .l{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.tile.hi{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.tile.hi .l{color:rgba(255,255,255,.8)}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-top:14px;overflow:hidden}
+.panel h3{font:600 14px/1 var(--display);letter-spacing:.12em;text-transform:uppercase;margin:0;padding:14px 16px;border-bottom:1px solid var(--line);color:var(--muted)}
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:9px 12px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;background:var(--surface-2)}
+tr:last-child td{border-bottom:0}
+tr.total td{font-weight:700;background:var(--surface-2)}
+tr.sub td{color:var(--muted);font-size:13px}
+tr.sub td:first-child{padding-left:30px}
+.club{display:inline-flex;align-items:center;gap:8px;vertical-align:middle}
+.cl{display:inline-flex;align-items:center;gap:8px}
+.club img{width:20px;height:20px;object-fit:contain}
+.tag{display:inline-block;font-size:11px;font-weight:600;padding:1px 7px;border-radius:99px;background:var(--surface-2);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+tr.club-row{cursor:pointer}
+tr.club-row:hover td{background:var(--surface-2)}
+.caret{display:inline-block;width:12px;color:var(--muted);transition:transform .15s}
+tr.open .caret{transform:rotate(90deg)}
+
+.note{margin-top:14px;padding:12px 14px;border-radius:10px;font-size:14px;background:var(--warn-bg);color:var(--warn-ink)}
+.error{margin-top:14px;padding:12px 14px;border-radius:10px;font-size:14px;background:var(--err-bg);color:var(--err-ink)}
+.loading{margin-top:18px;color:var(--muted);display:flex;align-items:center;gap:10px}
+.bar{height:4px;background:var(--surface-2);border-radius:99px;overflow:hidden;flex:1;max-width:260px}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.foot{margin-top:30px;color:var(--muted);font-size:13px}
+
+/* Setup / settings */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;margin-top:26px;box-shadow:var(--shadow);max-width:620px}
+.card h2{font:700 26px/1.1 var(--display);text-transform:uppercase;margin:0 0 8px}
+.card p{color:var(--muted);margin:0 0 14px}
+.field{display:grid;gap:6px;margin-bottom:14px}
+.field label{font-weight:600;font-size:13px}
+.field input,.field select{padding:11px 12px;border-radius:9px;border:1px solid var(--line);background:var(--bg)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{border:0;background:var(--accent);color:var(--on-accent);font-weight:600;padding:11px 18px;border-radius:9px;cursor:pointer}
+.btn.ghost{background:var(--surface-2);color:var(--ink)}
+.small{font-size:13px;color:var(--muted)}
+@media (max-width:560px){
+  .player h2{font-size:32px}.player .bignum{font-size:48px}
+  .tile .v{font-size:34px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="mast">
+  <div class="mast-in">
+    <div class="brand"><h1>Stats Blaugrana</h1><span>FC Barcelona</span></div>
+    <button class="icon-btn" id="settingsBtn" type="button">Réglages API</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="search" id="searchBox">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="q" type="search" autocomplete="off" placeholder="Tape le nom d'un joueur : Pedri, Lamine Yamal, Raphinha…" aria-label="Rechercher un joueur">
+    <div class="dropdown" id="dd" role="listbox" hidden></div>
+  </div>
+
+  <!-- Setup -->
+  <section class="card" id="setup" hidden>
+    <h2>Connecte ta clé API-Football</h2>
+    <p>L'appli interroge API-Football directement depuis ton navigateur. Ta clé reste sur cet ordinateur (stockage local du navigateur).</p>
+    <div class="field">
+      <label for="mode">Accès</label>
+      <select id="mode">
+        <option value="direct">Direct — dashboard.api-football.com</option>
+        <option value="rapidapi">Via RapidAPI</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="key">Clé API</label>
+      <input id="key" type="password" placeholder="Colle ta clé ici" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="rpm">Requêtes max par minute</label>
+      <input id="rpm" type="number" min="1" max="600" value="10">
+      <span class="small">10 sur le palier gratuit. Mets plus si ton abonnement le permet.</span>
+    </div>
+    <div class="row">
+      <button class="btn" id="saveKey" type="button">Enregistrer</button>
+      <button class="btn ghost" id="clearCache" type="button">Vider le cache</button>
+      <span class="small" id="quota"></span>
+    </div>
+    <p class="small" style="margin-top:14px">Chaque saison consultée est gardée en cache : une fois chargée, elle ne recoûte plus de requête (la saison en cours est rafraîchie toutes les 6 h).</p>
+  </section>
+
+  <!-- Squad (idle) -->
+  <section id="squadSec" hidden>
+    <div class="section-label" id="squadLabel">Effectif</div>
+    <div class="squad" id="squad"></div>
+  </section>
+
+  <!-- Player -->
+  <section id="playerSec" hidden>
+    <div class="player">
+      <img id="pPhoto" alt="">
+      <div class="bignum" id="pNum"></div>
+      <div>
+        <h2 id="pName"></h2>
+        <div class="meta" id="pMeta"></div>
+      </div>
+    </div>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-view="saison" id="tabSaison" aria-selected="true" type="button">Saison en cours</button>
+      <button class="tab" role="tab" data-view="barca" aria-selected="false" type="button">Depuis qu'il est au Barça</button>
+      <button class="tab" role="tab" data-view="carriere" aria-selected="false" type="button">Toute la carrière</button>
+    </div>
+    <div id="view"></div>
+  </section>
+
+  <div id="globalMsg"></div>
+  <p class="foot">Données : API-Football. Les stats antérieures à ~2010 et les divisions mineures peuvent manquer selon la couverture de l'API.</p>
+</main>
+
+<script>
+(() => {
+"use strict";
+const BARCA = 529;
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const norm = s => String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+const fmt = n => (n==null||isNaN(n)) ? "–" : Number(n).toLocaleString("fr-FR");
+
+/* ---------- storage ---------- */
+const store = {
+  get(k){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; }catch{ return null; } },
+  set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch{} },
+  del(k){ try{ localStorage.removeItem(k); }catch{} },
+  keys(){ try{ return Object.keys(localStorage); }catch{ return []; } }
+};
+let cfg = Object.assign({mode:"direct", key:"", rpm:10}, store.get("bs:cfg")||{});
+
+/* ---------- season helpers ---------- */
+function currentSeason(){ const d=new Date(); return d.getMonth()>=6 ? d.getFullYear() : d.getFullYear()-1; }
+const seasonLabel = y => `${y}-${String((y+1)%100).padStart(2,"0")}`;
+const CUR = currentSeason();
+
+/* ---------- API with rate limiting + cache ---------- */
+const stamps = [];
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+let onWait = null;
+
+function bumpQuota(){
+  const day = new Date().toISOString().slice(0,10);
+  const q = store.get("bs:quota") || {};
+  const n = (q.day===day ? q.n : 0) + 1;
+  store.set("bs:quota", {day, n});
+}
+function quotaText(){
+  const q = store.get("bs:quota"); const day = new Date().toISOString().slice(0,10);
+  return `${q && q.day===day ? q.n : 0} requête(s) envoyée(s) aujourd'hui depuis cet ordinateur`;
+}
+
+async function throttle(){
+  const rpm = Math.max(1, Number(cfg.rpm)||10);
+  for(;;){
+    const now = Date.now();
+    while(stamps.length && now - stamps[0] > 61000) stamps.shift();
+    if(stamps.length < rpm){ stamps.push(now); return; }
+    const wait = 61000 - (now - stamps[0]);
+    onWait && onWait(Math.ceil(wait/1000));
+    await sleep(Math.min(wait, 1000));
+  }
+}
+
+class ApiError extends Error { constructor(msg, kind){ super(msg); this.kind = kind; } }
+
+async function api(path, params, ttlMs){
+  const qs = new URLSearchParams(params).toString();
+  const ck = `bs:c:${path}?${qs}`;
+  const hit = store.get(ck);
+  if(hit && (ttlMs===Infinity || Date.now()-hit.t < ttlMs)) return hit.d;
+  if(!cfg.key) throw new ApiError("Aucune clé API enregistrée.", "nokey");
+
+  const base = cfg.mode==="rapidapi" ? "https://api-football-v1.p.rapidapi.com/v3" : "https://v3.football.api-sports.io";
+  const headers = cfg.mode==="rapidapi"
+    ? {"X-RapidAPI-Key":cfg.key, "X-RapidAPI-Host":"api-football-v1.p.rapidapi.com"}
+    : {"x-apisports-key":cfg.key};
+
+  for(let attempt=0; attempt<3; attempt++){
+    await throttle();
+    let res, json;
+    try{
+      res = await fetch(`${base}/${path}?${qs}`, {headers});
+      bumpQuota();
+      json = await res.json();
+    }catch(e){
+      throw new ApiError("Impossible de joindre API-Football. Vérifie ta connexion internet (ou, si tu as ouvert le fichier directement, essaie un autre navigateur).", "network");
+    }
+    if(res.status===429){ onWait && onWait(60); await sleep(61000); continue; }
+    const errs = json && json.errors;
+    const errList = errs ? (Array.isArray(errs) ? errs : Object.entries(errs).map(([k,v])=>({k,v}))) : [];
+    if(errList.length){
+      const txt = errList.map(e => e.v ?? e.message ?? JSON.stringify(e)).join(" ");
+      const keys = errList.map(e => e.k||"").join(" ");
+      if(/ratelimit|too many/i.test(keys+txt)){ onWait && onWait(60); await sleep(61000); continue; }
+      if(/plan|season/i.test(keys+txt)) throw new ApiError(txt, "plan");
+      if(/token|key|access|subscri/i.test(keys+txt)) throw new ApiError("Clé refusée par l'API : "+txt, "auth");
+      throw new ApiError(txt, "api");
+    }
+    if(res.status===401||res.status===403) throw new ApiError("Clé refusée par l'API (vérifie la clé et le mode d'accès dans les réglages).", "auth");
+    const data = json.response;
+    store.set(ck, {t:Date.now(), d:data});
+    return data;
+  }
+  throw new ApiError("Limite de requêtes atteinte. Réessaie dans une minute.", "rate");
+}
+
+const DAY = 864e5;
+const getSquad = () => api("players/squads", {team:BARCA}, 3*DAY).then(r => (r[0]&&r[0].players)||[]);
+const getProfile = id => api("players/profiles", {player:id}, 7*DAY).then(r => r[0] && r[0].player);
+const searchProfiles = q => api("players/profiles", {search:q}, DAY);
+const getTeams = id => api("players/teams", {player:id}, DAY);
+const getSeason = (id, y) => api("players", {id, season:y}, y>=CUR ? 6*36e5 : Infinity)
+  .then(r => (r[0]&&r[0].statistics)||[]);
+
+/* ---------- aggregation ---------- */
+function agg(stats){
+  const a = {apps:0, starts:0, min:0, goals:0, assists:0, yellow:0, red:0, conceded:0, saves:0, pen:0, rSum:0, rN:0};
+  for(const s of stats){
+    const g=s.games||{}, gl=s.goals||{}, c=s.cards||{}, p=s.penalty||{};
+    const apps = g.appearences||0;
+    a.apps+=apps; a.starts+=g.lineups||0; a.min+=g.minutes||0;
+    a.goals+=gl.total||0; a.assists+=gl.assists||0; a.conceded+=gl.conceded||0; a.saves+=gl.saves||0;
+    a.yellow+=(c.yellow||0)+(c.yellowred||0); a.red+=c.red||0; a.pen+=p.scored||0;
+    const r=parseFloat(g.rating); if(!isNaN(r)&&apps){ a.rSum+=r*apps; a.rN+=apps; }
+  }
+  a.rating = a.rN ? (a.rSum/a.rN) : null;
+  return a;
+}
+const isGK = () => /goal/i.test(state.position||"");
+
+/* ---------- state ---------- */
+const state = {squad:[], player:null, position:"", nationality:"", view:"saison", token:0};
+
+/* ---------- UI: search ---------- */
+const q = $("#q"), dd = $("#dd");
+let active = -1, opts = [];
+
+function renderDropdown(){
+  const term = norm(q.value.trim());
+  if(!term){ dd.hidden = true; return; }
+  const hits = state.squad.filter(p => norm(p.name).includes(term)).slice(0,8);
+  opts = hits.map(p => ({type:"p", p}));
+  if(term.length>=3) opts.push({type:"global", term:q.value.trim()});
+  dd.innerHTML = opts.map((o,i) => o.type==="p"
+    ? `<button class="opt${i===active?" active":""}" data-i="${i}" role="option" type="button"><span class="num">${esc(o.p.number??"")}</span><img src="${esc(o.p.photo)}" alt="" loading="lazy"><span>${esc(o.p.name)}</span><span class="pos">${esc(posFr(o.p.position))}</span></button>`
+    : `<button class="opt global${i===active?" active":""}" data-i="${i}" type="button">Chercher « ${esc(o.term)} » hors de l'effectif actuel</button>`
+  ).join("") || `<div class="opt global">Aucun joueur de l'effectif ne correspond.</div>`;
+  dd.hidden = false;
+}
+function choose(i){
+  const o = opts[i]; if(!o) return;
+  dd.hidden = true;
+  if(o.type==="p"){ q.value = o.p.name; openPlayer(o.p.id, o.p); }
+  else globalSearch(o.term);
+}
+q.addEventListener("input", () => { active=-1; renderDropdown(); });
+q.addEventListener("focus", renderDropdown);
+q.addEventListener("keydown", e => {
+  if(e.key==="ArrowDown"){ active=Math.min(active+1, opts.length-1); renderDropdown(); e.preventDefault(); }
+  else if(e.key==="ArrowUp"){ active=Math.max(active-1, 0); renderDropdown(); e.preventDefault(); }
+  else if(e.key==="Enter"){ choose(active>=0?active:0); e.preventDefault(); }
+  else if(e.key==="Escape"){ dd.hidden = true; }
+});
+dd.addEventListener("click", e => { const b = e.target.closest("[data-i]"); if(b) choose(+b.dataset.i); });
+document.addEventListener("click", e => { if(!$("#searchBox").contains(e.target)) dd.hidden = true; });
+
+async function globalSearch(term){
+  const msg = $("#globalMsg");
+  msg.innerHTML = `<div class="loading">Recherche de « ${esc(term)} »…</div>`;
+  try{
+    const r = await searchProfiles(term);
+    if(!r.length){ msg.innerHTML = `<div class="note">Aucun joueur trouvé pour « ${esc(term)} ». Essaie avec le nom de famille seul.</div>`; return; }
+    msg.innerHTML = `<div class="section-label">Résultats pour « ${esc(term)} »</div><div class="squad">${
+      r.slice(0,24).map(x => { const p=x.player; return `<button class="chip" data-id="${p.id}" type="button"><img src="${esc(p.photo)}" alt="" loading="lazy"><span><b>${esc(p.name)}</b><small>${esc(p.nationality||"")}${p.age?` · ${p.age} ans`:""}</small></span></button>`; }).join("")
+    }</div>`;
+    msg.querySelectorAll("[data-id]").forEach(b => b.onclick = () => { msg.innerHTML=""; openPlayer(+b.dataset.id); });
+  }catch(e){ msg.innerHTML = errorBox(e); }
+}
+
+const POS = {Goalkeeper:"Gardien", Defender:"Défenseur", Midfielder:"Milieu", Attacker:"Attaquant"};
+const posFr = p => POS[p] || p || "";
+
+/* ---------- squad ---------- */
+async function loadSquad(){
+  try{
+    const players = await getSquad();
+    const order = {Goalkeeper:0, Defender:1, Midfielder:2, Attacker:3};
+    state.squad = players.sort((a,b)=> (order[a.position]-order[b.position]) || ((a.number??99)-(b.number??99)));
+    $("#squadLabel").textContent = `Effectif ${seasonLabel(CUR)} · ${state.squad.length} joueurs`;
+    $("#squad").innerHTML = state.squad.map(p =>
+      `<button class="chip" data-id="${p.id}" type="button"><span class="num">${esc(p.number??"")}</span><img src="${esc(p.photo)}" alt="" loading="lazy"><span><b>${esc(p.name)}</b><small>${esc(posFr(p.position))}${p.age?` · ${p.age} ans`:""}</small></span></button>`).join("");
+    $("#squad").querySelectorAll("[data-id]").forEach(b => b.onclick = () => {
+      const p = state.squad.find(x=>x.id===+b.dataset.id); q.value = p.name; openPlayer(p.id, p);
+    });
+    if(!state.player) $("#squadSec").hidden = false;
+  }catch(e){ $("#globalMsg").innerHTML = errorBox(e); if(e.kind==="auth"||e.kind==="nokey") showSetup(true); }
+}
+
+/* ---------- player ---------- */
+async function openPlayer(id, basic){
+  state.token++;
+  state.player = id; state.cache = {};
+  $("#squadSec").hidden = true; $("#playerSec").hidden = false; $("#globalMsg").innerHTML = "";
+  $("#pPhoto").src = (basic&&basic.photo) || `https://media.api-sports.io/football/players/${id}.png`;
+  $("#pNum").textContent = basic&&basic.number!=null ? basic.number : "";
+  $("#pName").textContent = (basic&&basic.name) || "…";
+  $("#pMeta").innerHTML = basic ? `<span>${esc(posFr(basic.position))}</span>${basic.age?`<span>${basic.age} ans</span>`:""}` : "";
+  state.position = basic&&basic.position || "";
+  setView("saison");
+  try{
+    const p = await getProfile(id);
+    if(p && state.player===id){
+      state.position = p.position || state.position; state.nationality = p.nationality || "";
+      $("#pName").textContent = p.name;
+      const bits = [posFr(p.position), p.nationality, p.age?`${p.age} ans`:"", p.height||"", p.birth&&p.birth.date ? "né le "+new Date(p.birth.date).toLocaleDateString("fr-FR") : ""].filter(Boolean);
+      $("#pMeta").innerHTML = bits.map(b=>`<span>${esc(b)}</span>`).join("");
+    }
+  }catch{}
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+document.querySelectorAll(".tab").forEach(t => t.onclick = () => setView(t.dataset.view));
+function setView(v){
+  state.view = v;
+  document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", String(t.dataset.view===v)));
+  ({saison:viewSeason, barca:viewBarca, carriere:viewCareer})[v]();
+}
+
+/* ---------- rendering helpers ---------- */
+function tiles(a){
+  const gk = isGK();
+  const list = gk
+    ? [["Matchs",a.apps,true],["Titularisations",a.starts],["Minutes",a.min],["Buts encaissés",a.conceded],["Arrêts",a.saves],["Note moy.",a.rating?a.rating.toFixed(2):null]]
+    : [["Matchs",a.apps],["Buts",a.goals,true],["Passes déc.",a.assists],["Minutes",a.min],["Buts + PD / 90'",a.min?((a.goals+a.assists)*90/a.min).toFixed(2):null],["Note moy.",a.rating?a.rating.toFixed(2):null]];
+  return `<div class="tiles">${list.map(([l,v,hi])=>`<div class="tile${hi?" hi":""}"><div class="v">${v==null?"–":(typeof v==="number"?fmt(v):esc(String(v).replace(".",",")))}</div><div class="l">${l}</div></div>`).join("")}</div>`;
+}
+function cols(){ return isGK()
+  ? [["MJ","apps"],["Tit.","starts"],["Min","min"],["Enc.","conceded"],["Arrêts","saves"],["CJ","yellow"],["CR","red"]]
+  : [["MJ","apps"],["Tit.","starts"],["Min","min"],["Buts","goals"],["PD","assists"],["CJ","yellow"],["CR","red"],["Note","rating"]]; }
+const cell = (a,k) => k==="rating" ? (a.rating?a.rating.toFixed(2).replace(".",","):"–") : fmt(a[k]);
+const thead = first => `<thead><tr><th>${first}</th>${cols().map(c=>`<th>${c[0]}</th>`).join("")}</tr></thead>`;
+const rowHtml = (label, a, cls="", attrs="") => `<tr class="${cls}" ${attrs}><td>${label}</td>${cols().map(c=>`<td>${cell(a,c[1])}</td>`).join("")}</tr>`;
+const clubLabel = t => `<span class="club">${t.logo?`<img src="${esc(t.logo)}" alt="" loading="lazy">`:""}${esc(t.name)}</span>`;
+
+function errorBox(e){
+  if(e.kind==="plan") return `<div class="note"><b>Saison non incluse dans ton abonnement.</b> ${esc(e.message)} Le palier gratuit d'API-Football ne donne accès qu'à certaines saisons passées ; la saison en cours demande un abonnement payant.</div>`;
+  if(e.kind==="nokey") return `<div class="note">Ajoute ta clé API dans <b>Réglages API</b> pour charger les stats.</div>`;
+  return `<div class="error">${esc(e.message)}</div>`;
+}
+function loader(text){
+  const v = $("#view");
+  v.innerHTML = `<div class="loading"><span id="ldText">${esc(text)}</span><div class="bar"><i id="ldBar"></i></div></div>`;
+  onWait = s => { const t=$("#ldText"); if(t) t.textContent = `Limite de requêtes par minute : reprise dans ${s} s…`; };
+  return (done,total,label) => { const b=$("#ldBar"), t=$("#ldText"); if(b) b.style.width = `${Math.round(100*done/Math.max(total,1))}%`; if(t&&label) t.textContent = label; };
+}
+function guard(){ const tok = state.token, v = state.view; return () => tok===state.token && v===state.view; }
+
+async function fetchSeasons(id, seasons, progress, alive){
+  const out = {}, missing = [];
+  let i = 0;
+  for(const y of seasons){
+    if(!alive()) return null;
+    progress(i, seasons.length, `Chargement de la saison ${seasonLabel(y)} (${i+1}/${seasons.length})…`);
+    try{ out[y] = await getSeason(id, y); }
+    catch(e){ if(e.kind==="plan"){ missing.push(y); } else throw e; }
+    i++;
+  }
+  progress(1,1);
+  return {out, missing};
+}
+const missingNote = m => m.length ? `<div class="note">Saisons non accessibles avec ton abonnement : ${m.sort().map(seasonLabel).join(", ")}. Elles ne sont pas comptées dans les totaux.</div>` : "";
+
+/* ---------- view: current season ---------- */
+async function viewSeason(){
+  const alive = guard(), id = state.player;
+  loader(`Chargement de la saison ${seasonLabel(CUR)}…`);
+  try{
+    const stats = await getSeason(id, CUR);
+    if(!alive()) return;
+    const barca = stats.filter(s => s.team && s.team.id===BARCA);
+    const club = barca.length ? barca : stats.filter(s => !isNational(s.team));
+    if(!club.length){ $("#view").innerHTML = `<div class="note">Aucune statistique pour ${seasonLabel(CUR)} pour l'instant.</div>`; return; }
+    const a = agg(club);
+    const byComp = club.slice().sort((x,y)=>(y.games.appearences||0)-(x.games.appearences||0));
+    $("#view").innerHTML = tiles(a) +
+      `<div class="panel"><h3>${seasonLabel(CUR)} · par compétition</h3><div class="tbl-wrap"><table>${thead("Compétition")}<tbody>${
+        byComp.map(s => rowHtml(`${clubLabel({name:s.league.name, logo:s.league.logo})}`, agg([s]))).join("") +
+        (byComp.length>1 ? rowHtml("Total", a, "total") : "")
+      }</tbody></table></div></div>`;
+  }catch(e){ if(alive()) $("#view").innerHTML = errorBox(e); }
+}
+
+/* ---------- view: at Barça ---------- */
+async function viewBarca(){
+  const alive = guard(), id = state.player;
+  const progress = loader("Recherche de ses saisons au Barça…");
+  try{
+    const teams = await getTeams(id);
+    const entry = teams.find(t => t.team.id===BARCA);
+    if(!alive()) return;
+    if(!entry){ $("#view").innerHTML = `<div class="note">Aucune saison avec l'équipe première du FC Barcelone dans les données.</div>`; return; }
+    const seasons = entry.seasons.slice().sort((a,b)=>a-b);
+    const res = await fetchSeasons(id, seasons, progress, alive);
+    if(!res || !alive()) return;
+    const rows = seasons.filter(y => res.out[y]).map(y => ({y, stats: res.out[y].filter(s => s.team && s.team.id===BARCA)}));
+    const all = rows.flatMap(r => r.stats);
+    const a = agg(all);
+    const since = seasons[0];
+    $("#view").innerHTML = `<p class="small" style="margin:16px 0 0">Au Barça depuis la saison ${seasonLabel(since)} · ${seasons.length} saison${seasons.length>1?"s":""}, toutes compétitions confondues.</p>` +
+      tiles(a) + missingNote(res.missing) +
+      `<div class="panel"><h3>Saison par saison</h3><div class="tbl-wrap"><table>${thead("Saison")}<tbody>${
+        rows.slice().reverse().map(r => rowHtml(seasonLabel(r.y) + (r.y===CUR?' <span class="tag">en cours</span>':""), agg(r.stats))).join("") +
+        rowHtml("Total Barça", a, "total")
+      }</tbody></table></div></div>` + compPanel(all, "Au Barça · par compétition");
+  }catch(e){ if(alive()) $("#view").innerHTML = errorBox(e); }
+}
+
+function compPanel(stats, title){
+  const m = new Map();
+  for(const s of stats){ const k = s.league.name; if(!m.has(k)) m.set(k, {league:s.league, list:[]}); m.get(k).list.push(s); }
+  const rows = [...m.values()].map(v => ({...v, a:agg(v.list)})).filter(v=>v.a.apps>0).sort((x,y)=>y.a.apps-x.a.apps);
+  if(rows.length<2) return "";
+  return `<div class="panel"><h3>${title}</h3><div class="tbl-wrap"><table>${thead("Compétition")}<tbody>${
+    rows.map(r => rowHtml(clubLabel({name:r.league.name, logo:r.league.logo}), r.a)).join("")}</tbody></table></div></div>`;
+}
+
+/* ---------- view: career ---------- */
+function isNational(team){
+  if(!team) return false;
+  const n = norm(team.name);
+  return (state.nationality && n===norm(state.nationality)) || /\bu(17|19|20|21|23)\b/.test(n);
+}
+async function viewCareer(){
+  const alive = guard(), id = state.player;
+  const progress = loader("Recherche de ses clubs…");
+  try{
+    const teams = await getTeams(id);
+    if(!alive()) return;
+    const seasons = [...new Set(teams.flatMap(t => t.seasons))].sort((a,b)=>a-b);
+    if(!seasons.length){ $("#view").innerHTML = `<div class="note">Aucune donnée de carrière disponible pour ce joueur.</div>`; return; }
+    const res = await fetchSeasons(id, seasons, progress, alive);
+    if(!res || !alive()) return;
+
+    const clubs = new Map();
+    for(const y of seasons){
+      for(const s of (res.out[y]||[])){
+        if(!s.team) continue;
+        const k = s.team.id;
+        if(!clubs.has(k)) clubs.set(k, {team:s.team, nat:isNational(s.team), bySeason:new Map()});
+        const c = clubs.get(k);
+        if(!c.bySeason.has(y)) c.bySeason.set(y, []);
+        c.bySeason.get(y).push(s);
+      }
+    }
+    const list = [...clubs.values()].map(c => {
+      const all = [...c.bySeason.values()].flat();
+      const ys = [...c.bySeason.keys()].sort((a,b)=>a-b);
+      return {...c, a:agg(all), ys, first:ys[0]};
+    }).filter(c => c.a.apps>0 || c.ys.includes(CUR));
+    const clubRows = list.filter(c=>!c.nat).sort((a,b)=>a.first-b.first);
+    const natRows = list.filter(c=>c.nat).sort((a,b)=>a.first-b.first);
+    const clubAgg = agg(clubRows.flatMap(c => [...c.bySeason.values()].flat()));
+
+    const span = ys => ys.length===1 ? seasonLabel(ys[0]) : `${ys[0]}–${String((ys[ys.length-1]+1)%100).padStart(2,"0")}`;
+    const block = (c, idx) => {
+      const head = rowHtml(`<span class="cl"><span class="caret">▸</span>${clubLabel(c.team)}${c.team.id===BARCA?'<span class="tag">Barça</span>':""}<span class="small">${span(c.ys)}</span></span>`, c.a, "club-row", `data-c="${idx}"`);
+      const subs = c.ys.slice().reverse().map(y => rowHtml(seasonLabel(y), agg(c.bySeason.get(y)), "sub", `data-sub="${idx}" hidden`)).join("");
+      return head + subs;
+    };
+    let idx = 0;
+    $("#view").innerHTML = `<p class="small" style="margin:16px 0 0">Tous clubs confondus, toutes compétitions, de ${seasonLabel(seasons[0])} à aujourd'hui. Clique sur un club pour voir le détail par saison.</p>` +
+      tiles(clubAgg) + missingNote(res.missing) +
+      `<div class="panel"><h3>En club</h3><div class="tbl-wrap"><table>${thead("Club")}<tbody>${
+        clubRows.map(c => block(c, idx++)).join("") + rowHtml("Total en club", clubAgg, "total")
+      }</tbody></table></div></div>` +
+      (natRows.length ? `<div class="panel"><h3>En sélection</h3><div class="tbl-wrap"><table>${thead("Sélection")}<tbody>${
+        natRows.map(c => block(c, idx++)).join("")}</tbody></table></div></div>` : "");
+    $("#view").querySelectorAll("tr.club-row").forEach(tr => tr.onclick = () => {
+      const open = tr.classList.toggle("open");
+      $("#view").querySelectorAll(`[data-sub="${tr.dataset.c}"]`).forEach(r => r.hidden = !open);
+    });
+  }catch(e){ if(alive()) $("#view").innerHTML = errorBox(e); }
+}
+
+/* ---------- settings ---------- */
+function showSetup(force){
+  const s = $("#setup");
+  const show = force===true ? true : s.hidden;
+  s.hidden = !show;
+  $("#mode").value = cfg.mode; $("#key").value = cfg.key; $("#rpm").value = cfg.rpm;
+  $("#quota").textContent = quotaText();
+}
+$("#settingsBtn").onclick = () => showSetup();
+$("#saveKey").onclick = () => {
+  cfg = {mode:$("#mode").value, key:$("#key").value.trim(), rpm:Number($("#rpm").value)||10};
+  store.set("bs:cfg", cfg);
+  if(!cfg.key){ $("#quota").textContent = "Colle ta clé avant d'enregistrer."; return; }
+  $("#setup").hidden = true; $("#globalMsg").innerHTML = "";
+  loadSquad();
+};
+$("#clearCache").onclick = () => {
+  store.keys().filter(k=>k.startsWith("bs:c:")).forEach(k=>store.del(k));
+  $("#quota").textContent = "Cache vidé.";
+};
+$("#pPhoto").addEventListener("error", e => { e.target.style.visibility="hidden"; });
+$("#pPhoto").addEventListener("load", e => { e.target.style.visibility="visible"; });
+
+/* ---------- boot ---------- */
+if(!cfg.key){ showSetup(true); } else { loadSquad(); }
+})();
+</script>
+</body>
+</html>
